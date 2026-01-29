@@ -226,10 +226,74 @@ void ray_trace(int width, int height) {
     free(image);
 }
 
+/*
+ * Brute-force hash cracking (serial version).
+ *
+ * Uses DJB2 hash as a stand-in. A target string is hashed, then all
+ * candidate strings of a given length over a charset are enumerated
+ * and hashed until a match is found.
+ *
+ * Embarrassingly parallel: each candidate hash is independent.
+ */
+
+static unsigned long djb2_hash(const char *str, int len) {
+    unsigned long hash = 5381;
+    for (int i = 0; i < len; i++) {
+        hash = ((hash << 5) + hash) + (unsigned char)str[i];
+    }
+    return hash;
+}
+
+void brute_force_crack(int password_len) {
+    const char charset[] = "abcdefghijklmnopqrstuvwxyz";
+    int charset_size = 26;
+
+    /* Build a target password from the middle of the charset */
+    char target[16];
+    for (int i = 0; i < password_len; i++) {
+        target[i] = charset[(i * 7 + 3) % charset_size];
+    }
+    target[password_len] = '\0';
+    unsigned long target_hash = djb2_hash(target, password_len);
+
+    printf("Hash crack: target='%s' hash=%lu len=%d\n", target, target_hash, password_len);
+
+    /* Total candidates = charset_size ^ password_len */
+    long total = 1;
+    for (int i = 0; i < password_len; i++) total *= charset_size;
+
+    char candidate[16];
+    candidate[password_len] = '\0';
+    long found_at = -1;
+    long checked = 0;
+
+    for (long idx = 0; idx < total; idx++) {
+        /* Convert idx to a candidate string (base-26 encoding) */
+        long tmp = idx;
+        for (int pos = password_len - 1; pos >= 0; pos--) {
+            candidate[pos] = charset[tmp % charset_size];
+            tmp /= charset_size;
+        }
+
+        checked++;
+        if (djb2_hash(candidate, password_len) == target_hash) {
+            found_at = idx;
+            break;
+        }
+    }
+
+    if (found_at >= 0) {
+        printf("Found:      '%s' at index %ld\n", candidate, found_at);
+    } else {
+        printf("Not found after %ld candidates\n", checked);
+    }
+    printf("Checked:    %ld / %ld\n", checked, total);
+}
+
 int main(int argc, char *argv[]) {
 
-    if (argc < 6) {
-        printf("Usage: main_original <num_samples> <mandel_size> <max_iter> <num_intervals> <rt_size>\n");
+    if (argc < 7) {
+        printf("Usage: main_original <num_samples> <mandel_size> <max_iter> <num_intervals> <rt_size> <pw_len>\n");
         return 1;
     }
 
@@ -238,11 +302,13 @@ int main(int argc, char *argv[]) {
     int max_iter        = atoi(argv[3]);
     long num_intervals  = atol(argv[4]);
     int rt_size         = atoi(argv[5]);
+    int pw_len          = atoi(argv[6]);
 
     monte_carlo_pi(num_samples);
     mandelbrot(mandel_size, mandel_size, max_iter);
     numerical_integration(num_intervals, 0.0, 10.0);
     ray_trace(rt_size, rt_size);
+    brute_force_crack(pw_len);
 
     return 0;
 }
