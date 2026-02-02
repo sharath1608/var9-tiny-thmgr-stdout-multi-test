@@ -4,7 +4,7 @@ copy: thmgr
 	cp lib$(repo_name).so $(lib_location)
 
 thmgr:
-	clang-18 -shared -fPIC -o lib$(repo_name).so main_service.c -lthpool -L/usr/lib -Wl,-rpath,/usr/lib -Wl,-rpath,/data/lib
+	clang-18 -shared -fPIC -o lib$(repo_name).so main_service.c -lm -lthpool -L/usr/lib -Wl,-rpath,/usr/lib -Wl,-rpath,/data/lib
 
 clean:
 	rm lib$(repo_name).so

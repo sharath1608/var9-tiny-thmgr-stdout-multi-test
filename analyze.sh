@@ -217,13 +217,9 @@ do
   # Parse CSV line into array
   IFS=, read -ra iva_cols <<< "$iva_line"
 
-  # Build arguments: first column twice, then remaining columns
-  first_col="${iva_cols[0]}"
-  remaining_cols="${iva_cols[@]:1}"
-
   # time
   start=`date +%s.%N`;\
-  ./$algo_orig $first_col $first_col $remaining_cols;\
+  ./$algo_orig ${iva_cols[@]};\
   end=`date +%s.%N`;\
   time_serial+=(`printf '%.8f' $( echo "$end - $start" | bc -l )`);
 
@@ -246,12 +242,8 @@ do
   # Parse CSV line into array
   IFS=, read -ra iva_cols <<< "$iva_line"
 
-  # Build arguments: first column twice, then remaining columns
-  first_col="${iva_cols[0]}"
-  remaining_cols="${iva_cols[@]:1}"
-
   # memory
-  heaptrack -o "$algo.$count" ./$algo_orig $first_col $first_col $remaining_cols;\
+  heaptrack -o "$algo.$count" ./$algo_orig ${iva_cols[@]};\
   space_serial+=(`heaptrack --analyze "$algo.$count.zst"  | grep "peak heap memory consumption" | awk '{print $5}'`);
   count=$((count+1))
 
@@ -386,6 +378,13 @@ EOF
 
 echo "load response = $load_response"
 
+num_samples=50000000
+mandel_size=3000
+max_iter=2500
+num_intervals=50000000
+rt_size=1500
+pw_len=6
+
 # lib run
 for i in ${core[@]}
 do
@@ -394,7 +393,7 @@ do
 {
   "repo": "$repo_name",
   "core": $i,
-  "argv": ["main", "$iva_data", "$iva_data", "$iva_data", "$i"]
+  "argv": ["main", "$num_samples", "$mandel_size", "$max_iter", "$num_intervals", "$rt_size", "$pw_len", "$i"]
 }
 EOF
 )
@@ -423,7 +422,7 @@ for i in ${core[@]}
 do
   # time using direct execution
   start=`date +%s.%N`;\
-  ./$algo $iva_data $iva_data $iva_data $i;\
+  ./$algo $num_samples $mandel_size $max_iter $num_intervals $rt_size $pw_len $i;\
   end=`date +%s.%N`;\
   time_parallel_slow+=(`printf '%.8f' $( echo "$end - $start" | bc -l )`);
 
@@ -444,7 +443,7 @@ count=1
 for i in ${core[@]}
 do
   # memory
-  heaptrack -o "$algo.$count" ./$algo $iva_data $iva_data $iva_data $i;\
+  heaptrack -o "$algo.$count" ./$algo $num_samples $mandel_size $max_iter $num_intervals $rt_size $pw_len $i;\
   space_parallel+=(`heaptrack --analyze "$algo.$count.zst"  | grep "peak heap memory consumption" | awk '{print $5}'`);
   count=$((count+1))
 
@@ -551,7 +550,8 @@ done
 
 # Generate CSV files for fit.py
 # time-serial.csv
-echo "$iva_name,size,time" > time-serial.csv
+#echo "$iva_name,size,time" > time-serial.csv
+echo "$num_samples,$mandel_size,$max_iter,$num_intervals,$rt_size,$pw_len,time" > time-serial.csv
 for i in "${!iva_arr[@]}"; do
   # Extract all columns from the row for multivariate fitting
   echo "${iva_arr[$i]},${time_serial[$i]}" >> time-serial.csv
@@ -574,7 +574,7 @@ for i in "${!core[@]}"; do
 done
 
 # space-serial.csv
-echo "$iva_name,size,memory" > space-serial.csv
+echo "$num_samples,$mandel_size,$max_iter,$num_intervals,$rt_size,$pw_len,memory" > space-serial.csv
 for i in "${!iva_arr[@]}"; do
   # Extract all columns from the row for multivariate fitting
   echo "${iva_arr[$i]},${space_serial[$i]}" >> space-serial.csv
@@ -591,7 +591,7 @@ for i in "${!core[@]}"; do
 done
 
 # power-serial.csv
-echo "$iva_name,size,power" > power-serial.csv
+echo "$num_samples,$mandel_size,$max_iter,$num_intervals,$rt_size,$pw_len,power" > power-serial.csv
 for i in "${!iva_arr[@]}"; do
   # Extract all columns from the row for multivariate fitting
   echo "${iva_arr[$i]},${power_serial[$i]}" >> power-serial.csv
@@ -608,7 +608,7 @@ for i in "${!core[@]}"; do
 done
 
 # energy-serial.csv
-echo "$iva_name,size,energy" > energy-serial.csv
+echo "$num_samples,$mandel_size,$max_iter,$num_intervals,$rt_size,$pw_len,energy" > energy-serial.csv
 for i in "${!iva_arr[@]}"; do
   # Extract all columns from the row for multivariate fitting
   echo "${iva_arr[$i]},${energy_serial[$i]}" >> energy-serial.csv

@@ -1,7 +1,7 @@
 all: serial
 
 serial:
-	gcc -std=c99 -o main main.c -lpthread -lthpool
+	gcc -std=c99 -o main main.c -lm -lpthread -lthpool
 
 clean:
 	rm main
