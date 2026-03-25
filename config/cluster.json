@@ -26,6 +26,15 @@
       "max_concurrent_tasks": 8,
       "ssh_key": "/root/.ssh/id_ed25519",
       "work_dir": "/tmp/profiler"
+    },
+    {
+      "id": "server-4",
+      "host": "192.168.1.42",
+      "port": 22,
+      "user": "skoday",
+      "max_concurrent_tasks": 1,
+      "ssh_key": "/root/.ssh/id_ed25519",
+      "work_dir": "/tmp/profiler"
     }
   ],
   "shared_storage": {
