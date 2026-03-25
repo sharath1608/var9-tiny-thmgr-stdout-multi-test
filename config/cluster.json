@@ -5,7 +5,7 @@
       "host": "192.168.1.39",
       "port": 22,
       "user": "skoday",
-      "max_concurrent_tasks": 2,
+      "max_concurrent_tasks": 1,
       "ssh_key": "/root/.ssh/id_ed25519",
       "work_dir": "/tmp/profiler"
     },
