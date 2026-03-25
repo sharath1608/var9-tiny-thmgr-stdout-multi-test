@@ -8,7 +8,8 @@
     "parallel_thmgr_measurements": {
       "type": "scatter",
       "distribution_strategy": "round_robin",
-      "assigned_server": "server-3"
+      "assigned_server": "server-3",
+      "timeout": 3600
     },
     "parallel_direct_measurements": {
       "type": "scatter",
