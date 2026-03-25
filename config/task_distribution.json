@@ -1,0 +1,30 @@
+{
+  "task_groups": {
+    "serial_measurements": {
+      "type": "scatter",
+      "distribution_strategy": "round_robin",
+      "assigned_server": "server-2"
+    },
+    "parallel_thmgr_measurements": {
+      "type": "scatter",
+      "distribution_strategy": "round_robin",
+      "assigned_server": "server-3"
+    },
+    "parallel_direct_measurements": {
+      "type": "scatter",
+      "distribution_strategy": "round_robin",
+      "assigned_server": "server-1"
+    }
+  },
+  "dependencies": {
+    "serial_measurements": [],
+    "parallel_thmgr_measurements": ["preprocessing"],
+    "parallel_direct_measurements": ["preprocessing"],
+    "curve_fitting": [
+      "serial_measurements",
+      "parallel_thmgr_measurements",
+      "parallel_direct_measurements",
+      "data_collection"
+    ]
+  }
+}

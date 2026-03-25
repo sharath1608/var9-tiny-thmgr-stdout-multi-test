@@ -1,0 +1,22 @@
+{
+  "job_id": "auto",
+  "shared_files": [
+    "data.csv",
+    "core.txt",
+    "power-profile.csv"
+  ],
+  "binaries": [
+    "main_original",
+    "main",
+    "/usr/bin/fit.py"
+  ],
+  "result_collection": {
+    "temp_dir_pattern": "/tmp/profiler_{job_id}",
+    "result_merge_strategy": "immediate",
+    "checkpoint_enabled": true
+  },
+  "monitoring": {
+    "progress_update_interval": 5,
+    "health_check_interval": 30
+  }
+}
